@@ -7,15 +7,16 @@ export type Matcher = (value: string) => boolean;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Handler = (it: object, context?: any) => void | Promise<void>;
 
-function prepareSelector(s: string): Selector {
+export function prepareSelector(sel: string): Selector {
+  assert.string(sel, 'sel');
   // if it looks like a JSON Pointer, use the pointer as a selector...
-  if (~['#', '/'].indexOf(s[0])) {
-    const ptr = new JsonPointer(s);
+  if (~['#', '/'].indexOf(sel[0])) {
+    const ptr = new JsonPointer(sel);
     return (target: object): string => ptr.get(target);
   }
   // Otherwise use it as a property on the target...
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (target: { [n: string]: any }): string => (target ? target[s] : undefined);
+  return (target: { [n: string]: any }): string => (target ? target[sel] : undefined);
 }
 
 export interface Case {
@@ -101,7 +102,10 @@ export class SwitchMap {
   constructor(selector: string | Selector) {
     if (typeof selector === 'string') {
       selector = prepareSelector(selector);
+    } else {
+      assert.ok(typeof selector === 'function', 'selector (string | Selector) is required');
     }
+    this.selector = selector;
     this.values = [];
     this.matches = [];
   }
@@ -116,6 +120,7 @@ export class SwitchMap {
 
   case(c: Match | Value): SwitchMap {
     assert.ok(!this.isPrepared, 'Invalid operation; already prepared.');
+    assert.ok(c && typeof c === 'object', 'c (Match | Value) is required');
     const v = c as Value;
     if (typeof v.value !== 'undefined') {
       this.values.push(v);
@@ -128,6 +133,7 @@ export class SwitchMap {
   default(handler: Handler): SwitchMap {
     assert.ok(!this.hasDefault, 'Invalid operation; cannot be reassigned.');
     assert.ok(!this.isPrepared, 'Invalid operation; already prepared.');
+    assert.ok(typeof handler === 'function', 'handler (Handler) is required');
     this[$default] = handler;
     return this;
   }
