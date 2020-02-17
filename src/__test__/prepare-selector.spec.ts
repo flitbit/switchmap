@@ -34,4 +34,10 @@ describe('prepareSelector()', () => {
     expect(selector).to.be.a('function');
     expect(selector(data)).to.eql(data.foo.bar.baz);
   });
+  it('selector returns undefined when selection undefined', () => {
+    const data = { foo: 'bar', baz: 'quux' };
+    const selector = prepareSelector('quux');
+    expect(selector).to.be.a('function');
+    expect(selector(data)).to.be.undefined;
+  });
 });

@@ -150,13 +150,13 @@ describe('SwitchMap', () => {
       const observed: string[] = [];
       dispatcher
         .case({
-          value: 'bar',
+          match: v => v === 'bar',
           handler: () => {
             observed.push('bar');
           },
         })
         .case({
-          value: 'baz',
+          value: ['baz', 'quux'],
           handler: () => {
             observed.push('baz');
           },
