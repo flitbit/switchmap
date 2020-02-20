@@ -24,7 +24,7 @@ export interface Case {
 }
 
 export interface Match extends Case {
-  match: Matcher;
+  match: Matcher | RegExp;
 }
 
 export interface Value extends Case {
@@ -125,7 +125,12 @@ export class SwitchMap {
     if (typeof v.value !== 'undefined') {
       this.values.push(v);
     } else {
-      this.matches.push(c as Match);
+      const m = c as Match;
+      if (typeof m.match === 'function') this.matches.push(m);
+      else {
+        const rx = m.match as RegExp;
+        this.matches.push({ handler: m.handler, match: v => rx.test(v) });
+      }
     }
     return this;
   }
