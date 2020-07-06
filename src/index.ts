@@ -4,8 +4,7 @@ import { JsonPointer } from 'json-ptr';
 export type Selector = (target: object) => string;
 export type Matcher = (value: string) => boolean;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Handler = (it: object, context?: any) => void | Promise<void>;
+export type Handler = (it: object, context?: unknown) => void | Promise<void>;
 
 export function prepareSelector(sel: string): Selector {
   assert.string(sel, 'sel');
@@ -79,14 +78,14 @@ function prepareCases(selector: Selector, values: Value[], matches: Match[], def
   }
   const compiledFn = new Function('values', 'matches', 'defa', 'value', 'propagatedArgs', emit);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (target: any, propagatedArgs: any[]): Promise<any> => {
+  return (target: object, propagatedArgs: unknown[]): Promise<unknown> => {
     const value = selector(target);
     return compiledFn(values, matches, defa, value, propagatedArgs);
   };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Push = (target: any, propagatedArgs: any[]) => any;
+type Push = (target: object, propagatedArgs: unknown[]) => unknown;
 
 const $push = Symbol('push');
 const $default = Symbol('default');
@@ -149,7 +148,7 @@ export class SwitchMap {
     this[$push] = prepareCases(selector, values, matches, this[$default]);
   }
 
-  async push<T, R>(target: T): Promise<R> {
+  async push<T>(target: T): Promise<unknown> {
     assert.ok(this.isPrepared, 'Invalid operation; not prepared.');
     // eslint-disable-next-line prefer-rest-params
     return await this[$push](target, [...arguments]);
