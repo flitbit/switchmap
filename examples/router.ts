@@ -1,16 +1,46 @@
-# switchmap
-
-An independent SwitchMap, inspired by RxJs, for Nodejs and Javascript.
-
-> About a year ago I wrote one of these in a Javascript codebase for the day job; but I've been jonesing for something similar in the open-source community, so I decided to write another - this time in Typescript. I hope it is useful to others.
-
-## Use
-
-```ts
-// examples/version.ts
-// $ npx ts-node examples/version.ts
+// examples/router.ts
+/**
+ * @hidden
+ * @packageDocumentation
+ */
+// A simple, contrived routing example.
 
 import { SwitchMap } from '../dist';
+
+import {
+  sendEmail, sendText, callRequesterByPhone,
+  queueForSupportPersonnel, unsupported
+} from './contact-types';
+
+const requests = new SwitchMap('type')
+  .value('email', sendEmail)
+  .value('text', sendText)
+  .match(t => t === 'phone', callRequesterByPhone)
+  .value(['tweet', 'holla'], queueForSupportPersonnel)
+  .default(unsupported);
+
+requests.push({
+  type: 'email',
+  name: 'Bilbo',
+  surname: 'Baggins',
+  emailAddress: 'bilbo@bagend.com'
+});
+// sending info to Bilbo Baggins via email: bilbo@bagend.com
+
+requests.push({
+  type: 'tweet',
+  name: 'Frodo',
+  surname: 'Baggins',
+  twitterHandle: 'frodob'
+});
+// contact by tweet for Frodo Baggins queued for support personnel
+
+requests.push({
+  type: 'eagle',
+  name: 'Gandalf',
+  surname: 'Greyhame'
+});
+// contact by eagle unsupported, Gandalf Greyhame won't hear from us, round file it.
 
 interface Message {
   version?: string;
@@ -43,31 +73,3 @@ dispatch.push({ version: '2.1', data: 'blah blah' });
 // received 2.1: blah blah
 
 dispatch.push({ version: '3.1', data: 'blah blah' });
-// unsupported: 3.1
-```
-
-## Install
-
-In your shell:
-
-```bash
-npm install switchmap
-```
-
-## Import
-
-In your module:
-
-```ts
-import { SwitchMap } from 'switchmap';
-```
-
-## API Documentation
-
-The [API documentation is generated from code by typedoc and hosted here](http://flitbit.github.io/switchmap/classes/_src_index_.switchmap.html). Read the docs.
-
-Documentation is always a work in progress, let us know by creating an issue if you need a scenario documented.
-
-## License
-
-[MIT](https://github.com/flitbit/switchmap/blob/master/LICENSE)

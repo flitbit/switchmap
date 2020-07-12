@@ -1,14 +1,9 @@
-# switchmap
-
-An independent SwitchMap, inspired by RxJs, for Nodejs and Javascript.
-
-> About a year ago I wrote one of these in a Javascript codebase for the day job; but I've been jonesing for something similar in the open-source community, so I decided to write another - this time in Typescript. I hope it is useful to others.
-
-## Use
-
-```ts
 // examples/version.ts
 // $ npx ts-node examples/version.ts
+/**
+ * @hidden
+ * @packageDocumentation
+ */
 
 import { SwitchMap } from '../dist';
 
@@ -44,30 +39,3 @@ dispatch.push({ version: '2.1', data: 'blah blah' });
 
 dispatch.push({ version: '3.1', data: 'blah blah' });
 // unsupported: 3.1
-```
-
-## Install
-
-In your shell:
-
-```bash
-npm install switchmap
-```
-
-## Import
-
-In your module:
-
-```ts
-import { SwitchMap } from 'switchmap';
-```
-
-## API Documentation
-
-The [API documentation is generated from code by typedoc and hosted here](http://flitbit.github.io/switchmap/classes/_src_index_.switchmap.html). Read the docs.
-
-Documentation is always a work in progress, let us know by creating an issue if you need a scenario documented.
-
-## License
-
-[MIT](https://github.com/flitbit/switchmap/blob/master/LICENSE)
