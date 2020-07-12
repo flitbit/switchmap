@@ -24,8 +24,10 @@ commands:
       - run:
           name: build & test
           command: npm run ci
-          when: always
-      - run: bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: upload codecov
+          command: bash <(curl -s https://codecov.io/bash)
+
       # Upload results
       - store_test_results:
           path: reports
