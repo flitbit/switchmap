@@ -25,6 +25,17 @@ commands:
           name: build & test
           command: npm run ci
           when: always
+      - run: bash <(curl -s https://codecov.io/bash)
+      # Upload results
+      - store_test_results:
+          path: reports
+      - store_artifacts:
+          path: ./reports/mocha/test-results.xml
+      - store_artifacts:
+          path: ./reports/eslint/eslint.xml
+      - store_artifacts: # upload test coverage as artifact
+          path: ./coverage/lcov.info
+          prefix: tests
 
 jobs:
   build-pre:
@@ -35,10 +46,11 @@ jobs:
       - run:
           name: write pre-release npm package
           command: |
-            sudo npm i -g json
+            sudo npm i -g json semver
             PACKAGE_VERSION="$(cat package.json | json version)"
             BRANCH_NAME="${CIRCLE_BRANCH//[^a-z0-9\-]/-}"
-            npm --no-git-tag-version version ${PACKAGE_VERSION}-${BRANCH_NAME}.$(git rev-parse --short HEAD)
+            VERSION_PRE="$(semver -i prepatch --preid ${BRANCH_NAME}.$(git rev-parse --short HEAD) ${PACKAGE_VERSION})"
+            npm --no-git-tag-version version ${VERSION_PRE%.0}
             npm publish --tag=${BRANCH_NAME}
 
   build-release:
