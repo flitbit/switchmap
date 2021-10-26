@@ -2,7 +2,7 @@ version: 2.1
 executors:
   node-14:
     docker:
-      - image: circleci/node14:
+      - image: circleci/node-14:
 
 commands:
   npm-ci:
