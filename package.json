@@ -1,6 +1,6 @@
 {
   "name": "switchmap",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "An all purpose, composable, performant router.",
   "keywords": [
     "switch",
