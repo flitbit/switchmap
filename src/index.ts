@@ -14,7 +14,10 @@ export function prepareSelector(sel: string): Selector {
     return (target: unknown): string => ptr.get(target) + '';
   }
   // Otherwise use it as a property on the target...
-  return (target: Record<string, unknown>): string => (target ? target[sel] as string : undefined);
+  return (target) => {
+    const t = target as Record<string, unknown>;
+    return t ? (t[sel] as string) : (undefined as unknown as string);
+  };
 }
 
 export interface AbstractCase {
@@ -32,7 +35,12 @@ export interface Value extends AbstractCase {
 export type Case = Match | Value;
 
 /** @hidden */
-function prepareCases(selector: Selector, values: Value[], matches: Match[], defa?: Handler): Push {
+function prepareCases(
+  selector: Selector,
+  values: Value[],
+  matches: Match[],
+  defa?: Handler,
+): Push {
   // This function captures selector, values, matches, and default, and creates a Function with an
   // emitted switch statement that [tries to] efficiently evaluate the cases registered with the
   // calling SwitchMap.
@@ -77,7 +85,14 @@ function prepareCases(selector: Selector, values: Value[], matches: Match[], def
   return defa.apply(null, propagatedArgs);
   `;
   }
-  const compiledFn = new Function('values', 'matches', 'defa', 'value', 'propagatedArgs', emit);
+  const compiledFn = new Function(
+    'values',
+    'matches',
+    'defa',
+    'value',
+    'propagatedArgs',
+    emit,
+  );
   return (target: unknown, propagatedArgs: unknown[]): Promise<unknown> => {
     const value = selector(target);
     return compiledFn(values, matches, defa, value, propagatedArgs);
@@ -102,10 +117,10 @@ const $default = Symbol('default');
  * * `matcher` · a [[Matcher]] matches a subset of keys to a specific handler
  * * `handler` · a [[Handler]] handles items as per your business logic
  *
- * If you visualize the work a prepared `SwitchMap` performs as a `switch`
+ * If you visualize a prepared `SwitchMap` as a `switch`
  * statement you wouldn't be far off. The practical difference is that you can
  * compose a `SwitchMap` at runtime and use both synchronous and `async`
- * handlers. Because of our _prepare_ step, dispatch performance should be
+ * handlers. Because of our _prepare_ step, the performance should be
  * negligible compared to a hand written switch statement.
  *
  * ```ts
@@ -271,7 +286,10 @@ export class SwitchMap {
     if (typeof selector === 'string') {
       selector = prepareSelector(selector);
     } else {
-      assert.ok(typeof selector === 'function', 'selector (string | Selector) is required');
+      assert.ok(
+        typeof selector === 'function',
+        'selector (string | Selector) is required',
+      );
     }
     this.selector = selector;
     this.values = [];
@@ -290,7 +308,7 @@ export class SwitchMap {
   /**
    * Indicates whether the instance has been prepared.
    *
-  * @returns `true` if the instance has been prepared; otherwise `false`.
+   * @returns `true` if the instance has been prepared; otherwise `false`.
    */
   get isPrepared(): boolean {
     return typeof this[$push] === 'function';
@@ -380,7 +398,7 @@ export class SwitchMap {
           if (typeof m.match === 'function') this.matches.push(m);
           else {
             const rx = m.match as RegExp;
-            this.matches.push({ handler: m.handler, match: v => rx.test(v) });
+            this.matches.push({ handler: m.handler, match: (v) => rx.test(v) });
           }
         }
       }
@@ -428,7 +446,9 @@ export class SwitchMap {
    * or rejects
    */
   async push<T>(target: T): Promise<unknown> {
-    if (!this.isPrepared) { this.prepare(); }
+    if (!this.isPrepared) {
+      this.prepare();
+    }
     // eslint-disable-next-line prefer-rest-params
     return await this[$push](target, [...arguments]);
   }
