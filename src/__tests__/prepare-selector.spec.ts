@@ -3,18 +3,18 @@
  * @packageDocumentation
  */
 
-import { prepareSelector } from '../src';
+import { prepareSelector } from '..';
 
 describe('prepareSelector()', () => {
   it('throws when not sel undefined', () => {
     expect(() => {
-      prepareSelector(undefined);
+      prepareSelector(undefined as unknown as string);
     }).toThrow('sel (string) is required');
   });
 
   it('throws when not sel null', () => {
     expect(() => {
-      prepareSelector(null);
+      prepareSelector(null as unknown as string);
     }).toThrow('sel (string) is required');
   });
 

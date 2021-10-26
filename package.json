@@ -8,8 +8,15 @@
     "dispatcher",
     "composable-switch"
   ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "types": "dist/types/index.d.ts",
   "files": [
     "dist"
   ],
@@ -20,46 +27,56 @@
     "url": "https://github.com/flitbit/switchmap"
   },
   "scripts": {
-    "clean": "rimraf coverage dist tmp docs",
+    "clean": "shx rm -rf coverage dist tmp docs",
     "prebuild": "npm run lint",
     "build": "npm run buildall",
-    "buildall": "tsc -p tsconfig.release.json && npm run docs",
-    "build:watch": "tsc -w -p tsconfig.release.json",
+    "buildall": "rollup -c && npm run docs",
+    "build:watch": "rollup -c -w",
     "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "prejest": "npm run lint",
     "jest": "jest",
     "pretest": "npm run lint",
-    "test": "jest --coverage",
-    "test:watch": "chokidar \"*.js\" \"*.json\" \"src/**/*.ts\" \"__tests__/**/*.ts\" --command \"npm run test\" --initial",
+    "test": "cross-env TS_NODE_COMPILER_OPTIONS='{ \"module\": \"commonjs\", \"noEmit\": false }' jest --coverage",
+    "test:watch": "onchange --initial \"*.js\" \"*.json\" \"src/**/*.ts\" -- npm run test",
     "cilint": "eslint . --ext .ts,.tsx --format junit --output-file ./reports/eslint/eslint.xml",
     "precibuild": "npm run cilint",
     "cibuild": "npm run buildall",
     "preci": "npm run cibuild",
-    "ci": "jest --config jest.ci.config.js --coverage",
-    "docs": "typedoc --theme minimal && cp _config.yml docs/",
-    "docs:watch": "chokidar \"*.md\" \"src/**/*.ts\" --command \"npm run docs\" --initial"
+    "ci": "cross-env TS_NODE_COMPILER_OPTIONS='{ \"module\": \"commonjs\", \"noEmit\": false }' jest --config jest.ci.config.js --coverage",
+    "docs": "typedoc && shx cp _config.yml docs/",
+    "docs:watch": "onchange --initial \"*.md\" \"src/**/*.ts\" --npm run docs"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-node-resolve": "^13.0.6",
     "@types/assert-plus": "^1.0.4",
     "@types/debug": "^4.1.5",
-    "@types/jest": "~26.0.4",
-    "@types/node": "~14.0.22",
-    "@typescript-eslint/eslint-plugin": "~3.6.0",
-    "@typescript-eslint/parser": "~3.6.0",
-    "chokidar-cli": "^2.1.0",
-    "eslint": "^7.4.0",
-    "eslint-config-prettier": "~6.11.0",
-    "eslint-plugin-jest": "~23.18.0",
-    "jest": "~26.1.0",
-    "prettier": "~2.0.5",
-    "rimraf": "~3.0.2",
-    "ts-jest": "~26.1.1",
-    "ts-node": "^8.10.2",
-    "typedoc": "^0.17.8",
-    "typescript": "~3.9.6"
+    "@types/jest": "^27.0.2",
+    "@types/node": "^16.11.4",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jest": "^25.2.2",
+    "eslint-plugin-mocha": "^9.0.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^27.3.1",
+    "onchange": "^7.1.0",
+    "prettier": "^2.4.1",
+    "rollup": "^2.58.3",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "shx": "^0.3.3",
+    "ts-jest": "^27.0.7",
+    "ts-node": "^10.4.0",
+    "typedoc": "^0.22.6",
+    "typescript": "^4.4.4"
   },
   "dependencies": {
     "assert-plus": "^1.0.0",
-    "json-ptr": "^1.3.0"
+    "json-ptr": "^3.0.0"
   }
 }

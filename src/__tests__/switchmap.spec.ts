@@ -3,19 +3,22 @@
  * @packageDocumentation
  */
 
-import { SwitchMap } from '../src';
+import { Case, Handler, SwitchMap } from '..';
 
 describe('SwitchMap', () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const nullHandlerSync = () => {};
+
   describe('.ctor(selector)', () => {
     it('.ctor throws when not selector undefined', () => {
       expect(() => {
-        new SwitchMap(undefined);
+        new SwitchMap(undefined as unknown as string);
       }).toThrow('selector (string | Selector) is required');
     });
 
     it('.ctor throws when not selector null', () => {
       expect(() => {
-        new SwitchMap(null);
+        new SwitchMap(null as unknown as string);
       }).toThrow('selector (string | Selector) is required');
     });
 
@@ -42,11 +45,9 @@ describe('SwitchMap', () => {
       expect(typeof selector).toBe('function');
       expect(selector(data)).toBe(data.foo.bar.baz);
     });
-
   });
 
   describe('.hasDefault', () => {
-
     it('is false, by default', () => {
       const dispatcher = new SwitchMap('#/foo/bar/baz');
       expect(dispatcher.hasDefault).toBe(false);
@@ -54,14 +55,12 @@ describe('SwitchMap', () => {
 
     it('is true after setting default handler', () => {
       const dispatcher = new SwitchMap('#/foo/bar/baz');
-      dispatcher.default(() => null);
+      dispatcher.default(nullHandlerSync);
       expect(dispatcher.hasDefault).toBe(true);
     });
-
   });
 
   describe('.isPrepared', () => {
-
     it('is false, by default', () => {
       const dispatcher = new SwitchMap('foo');
       expect(dispatcher.isPrepared).toBe(false);
@@ -69,34 +68,32 @@ describe('SwitchMap', () => {
 
     it('is true after preparing', () => {
       const dispatcher = new SwitchMap('foo');
-      dispatcher.default(() => null);
+      dispatcher.default(nullHandlerSync);
       dispatcher.prepare();
       expect(dispatcher.isPrepared).toBe(true);
     });
-
   });
 
   describe('.default(handler)', () => {
-
     it('throws if handler is undefined', () => {
       const dispatcher = new SwitchMap('foo');
       expect(() => {
-        dispatcher.default(undefined);
+        dispatcher.default(undefined as unknown as Handler);
       }).toThrow('handler (Handler) is required');
     });
 
     it('throws if handler is null', () => {
       const dispatcher = new SwitchMap('foo');
       expect(() => {
-        dispatcher.default(null);
+        dispatcher.default(null as unknown as Handler);
       }).toThrow('handler (Handler) is required');
     });
 
     it('throws if already has default', () => {
       const dispatcher = new SwitchMap('foo');
-      dispatcher.default(() => null);
+      dispatcher.default(nullHandlerSync);
       expect(() => {
-        dispatcher.default(() => null);
+        dispatcher.default(nullHandlerSync);
       }).toThrow('Invalid operation; cannot be reassigned.');
     });
 
@@ -105,11 +102,11 @@ describe('SwitchMap', () => {
       dispatcher
         .case({
           value: 'bar',
-          handler: () => null,
+          handler: nullHandlerSync,
         })
         .prepare();
       expect(() => {
-        dispatcher.default(() => null);
+        dispatcher.default(nullHandlerSync);
       }).toThrow('Invalid operation; already prepared.');
     });
 
@@ -128,25 +125,23 @@ describe('SwitchMap', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dispatcher.default((target: any): void => {
           console.log(target.foo.bar);
-        })
+        }),
       ).toEqual(dispatcher);
     });
-
   });
 
   describe('.case(...cases: Case[])', () => {
-
     it('throws if c is undefined', () => {
       const dispatcher = new SwitchMap('foo');
       expect(() => {
-        dispatcher.case(undefined);
+        dispatcher.case(undefined as unknown as Case);
       }).toThrow('cases (Case[]) is required');
     });
 
     it('throws if c is null', () => {
       const dispatcher = new SwitchMap('foo');
       expect(() => {
-        dispatcher.case(null);
+        dispatcher.case(null as unknown as Case);
       }).toThrow('cases (Case[]) is required');
     });
 
@@ -159,11 +154,10 @@ describe('SwitchMap', () => {
 
     it('throws if already prepared', () => {
       const dispatcher = new SwitchMap('foo');
-      dispatcher
-        .value('bar', () => null)
-        .prepare();
-      expect(() => dispatcher.value('bar', () => null))
-        .toThrow('Invalid operation; already prepared.');
+      dispatcher.value('bar', nullHandlerSync).prepare();
+      expect(() => dispatcher.value('bar', nullHandlerSync)).toThrow(
+        'Invalid operation; already prepared.',
+      );
     });
 
     it('succeeds when specified correctly', async () => {
@@ -179,7 +173,7 @@ describe('SwitchMap', () => {
       ];
       const dispatcher = new SwitchMap('foo');
       dispatcher
-        .match(v => v === 'bar', handler1)
+        .match((v) => v === 'bar', handler1)
         .match(/^qu.+/, handler2)
         .value(['baz', 'garply'], handler3)
         .prepare();
@@ -195,11 +189,10 @@ describe('SwitchMap', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dispatcher.case({
           value: 'bar',
-          handler: () => null,
-        })
+          handler: nullHandlerSync,
+        }),
       ).toEqual(dispatcher);
     });
-
   });
 
   describe('.push()', () => {
@@ -209,7 +202,7 @@ describe('SwitchMap', () => {
       { foo: 'qux' },
       { foo: 'quux' },
       { foo: 'garply' },
-      { foo: 'waldo' }
+      { foo: 'waldo' },
     ];
 
     it('matches handler by value (single)', async () => {
@@ -218,13 +211,13 @@ describe('SwitchMap', () => {
       const handler3 = jest.fn();
       const handler4 = jest.fn();
       const dispatch = new SwitchMap('foo')
-        .match(v => v === 'bar', handler1)
+        .match((v) => v === 'bar', handler1)
         .match(/^qu.+/, handler2)
         .value('waldo', handler3)
         .value(['baz', 'garply'], handler4)
         .prepare();
 
-      const item = data.find(it => it.foo === 'waldo');
+      const item = data.find((it) => it.foo === 'waldo');
       await expect(dispatch.push(item)).resolves.not.toThrow();
       expect(handler1).not.toHaveBeenCalled();
       expect(handler2).not.toHaveBeenCalled();
@@ -239,13 +232,13 @@ describe('SwitchMap', () => {
       const handler4 = jest.fn();
 
       const dispatch = new SwitchMap('foo')
-        .match(v => v === 'bar', handler1)
+        .match((v) => v === 'bar', handler1)
         .match(/^qu.+/, handler2)
         .value('waldo', handler3)
         .value(['baz', 'garply'], handler4)
         .prepare();
 
-      const item = data.find(it => it.foo === 'garply');
+      const item = data.find((it) => it.foo === 'garply');
       await expect(dispatch.push(item)).resolves.not.toThrow();
       expect(handler1).not.toHaveBeenCalled();
       expect(handler2).not.toHaveBeenCalled();
@@ -260,13 +253,13 @@ describe('SwitchMap', () => {
       const handler4 = jest.fn();
 
       const dispatch = new SwitchMap('foo')
-        .match(v => v === 'bar', handler1)
+        .match((v) => v === 'bar', handler1)
         .match(/^qu.+/, handler2)
         .value('waldo', handler3)
         .value(['baz', 'garply'], handler4)
         .prepare();
 
-      const item = data.find(it => it.foo === 'bar');
+      const item = data.find((it) => it.foo === 'bar');
       await expect(dispatch.push(item)).resolves.not.toThrow();
       expect(handler1).toHaveBeenCalledWith(item);
       expect(handler2).not.toHaveBeenCalled();
@@ -281,32 +274,28 @@ describe('SwitchMap', () => {
       const handler4 = jest.fn();
 
       const dispatch = new SwitchMap('foo')
-        .match(v => v === 'bar', handler1)
+        .match((v) => v === 'bar', handler1)
         .match(/^qu.+/, handler2)
         .value('waldo', handler3)
         .value(['baz', 'garply'], handler4)
         .prepare();
 
-      const item = data.find(it => it.foo === 'quux');
+      const item = data.find((it) => it.foo === 'quux');
       await expect(dispatch.push(item)).resolves.not.toThrow();
       expect(handler1).not.toHaveBeenCalled();
       expect(handler2).toHaveBeenCalledWith(item);
       expect(handler3).not.toHaveBeenCalled();
       expect(handler4).not.toHaveBeenCalled();
     });
-
   });
 
   it('default handler is called when pushing undefined', async () => {
     const handler1 = jest.fn();
     const handler2 = jest.fn();
     const dispatcher = new SwitchMap('foo');
-    dispatcher
-      .match(v => v === 'bar', handler1)
-      .default(handler2);
+    dispatcher.match((v) => v === 'bar', handler1).default(handler2);
     await expect(dispatcher.push(undefined)).resolves.not.toThrow();
     expect(handler1).not.toHaveBeenCalled();
     expect(handler2).toHaveBeenCalledWith(undefined);
   });
-
 });
